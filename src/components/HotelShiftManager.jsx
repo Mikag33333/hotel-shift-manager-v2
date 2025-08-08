@@ -326,8 +326,8 @@ function HotelShiftManager() {
                 <Calendar className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">グランドルチェ</h1>
-                <p className="text-sm text-gray-600">AI搭載シフト管理システム Pro</p>
+                <h1 className="text-xl font-bold text-gray-900">WorkScheduler Pro</h1>
+                <p className="text-sm text-gray-600">AI搭載シフト管理システム</p>
               </div>
             </div>
             
