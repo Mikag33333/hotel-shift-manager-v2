@@ -68,8 +68,8 @@ function HotelShiftManager() {
     }
   });
 
-  const generateWeekDates = useCallback((startDate) => {
-    const dates = [];
+  const generateWeekDates = useCallback((startDate: Date) => {
+    const dates: Date[] = [];
     const start = new Date(startDate);
     start.setDate(start.getDate() - start.getDay());
     
@@ -86,7 +86,7 @@ function HotelShiftManager() {
     return requiredStaffCount[key] || 1;
   }, [requiredStaffCount]);
 
-  const setRequiredStaff = useCallback((deptId, shiftId, count) => {
+  const setRequiredStaff = useCallback((deptId: string, shiftId: string, count: string) => {
     const key = `${deptId}-${shiftId}`;
     const parsedCount = parseInt(count, 10);
     if (isNaN(parsedCount) || parsedCount < 1) {
@@ -100,7 +100,7 @@ function HotelShiftManager() {
     }));
   }, []);
 
-  const updateShiftTime = useCallback((deptId, shiftId, field, value) => {
+  const updateShiftTime = useCallback((deptId: string, shiftId: string, field: string, value: string) => {
     setTempShiftSettings(prev => {
       const newTemp = JSON.parse(JSON.stringify(prev));
       if (!newTemp[deptId]) newTemp[deptId] = {};
@@ -375,6 +375,17 @@ function HotelShiftManager() {
               >
                 <Clock className="w-4 h-4 inline mr-1" />
                 シフト管理
+              </button>
+              <button
+                onClick={() => setCurrentView('emergency')}
+                className={`px-3 py-2 rounded-lg font-medium text-sm ${
+                  currentView === 'emergency' 
+                    ? 'bg-red-600 text-white' 
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <Zap className="w-4 h-4 inline mr-1" />
+                緊急対応
               </button>
             </nav>
           </div>
@@ -1039,6 +1050,190 @@ function HotelShiftManager() {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentView === 'emergency' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-red-500 to-pink-500 p-6 rounded-xl text-white">
+              <div className="flex items-center space-x-3">
+                <Zap className="w-8 h-8" />
+                <div>
+                  <h2 className="text-2xl font-bold">緊急シフト対応</h2>
+                  <p className="text-red-100">急な欠勤・変更に即座に対応します</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Users className="w-5 h-5 mr-2 text-red-600" />
+                  急な欠勤対応
+                </h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">欠勤するスタッフ</label>
+                    <select className="w-full p-3 border rounded-lg">
+                      <option value="">スタッフを選択</option>
+                      {Object.values(staffData).flat().map(staff => (
+                        <option key={staff.uniqueId} value={staff.uniqueId}>
+                          {staff.name} ({departments.find(d => d.id === staff.department)?.name})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">対象日</label>
+                    <input
+                      type="date"
+                      className="w-full p-3 border rounded-lg"
+                      defaultValue={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">対象シフト</label>
+                    <select className="w-full p-3 border rounded-lg">
+                      <option value="">シフトを選択</option>
+                      {defaultShifts.map(shift => (
+                        <option key={shift.id} value={shift.id}>
+                          {shift.name} ({shift.time})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <button className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 font-medium">
+                    代替スタッフを検索
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Brain className="w-5 h-5 mr-2 text-blue-600" />
+                  AI代替スタッフ提案
+                </h3>
+                
+                <div className="space-y-3">
+                  <div className="p-4 border border-green-200 bg-green-50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-green-800">推奨度: 高</p>
+                        <p className="text-sm text-gray-600">田中花子 (中堅・協調型)</p>
+                        <p className="text-xs text-gray-500">勤務可能・経験適合・今週の労働時間に余裕あり</p>
+                      </div>
+                      <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">
+                        選択
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-yellow-800">推奨度: 中</p>
+                        <p className="text-sm text-gray-600">佐藤一郎 (ベテラン・リーダー気質)</p>
+                        <p className="text-xs text-gray-500">勤務可能・高経験・今週やや多忙</p>
+                      </div>
+                      <button className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 text-sm">
+                        選択
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 border border-red-200 bg-red-50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-red-800">推奨度: 低</p>
+                        <p className="text-sm text-gray-600">鈴木太郎 (新人・内向的)</p>
+                        <p className="text-xs text-gray-500">勤務可能・経験浅い・要サポート</p>
+                      </div>
+                      <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">
+                        選択
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800 font-medium">💡 ワンポイントアドバイス</p>
+                  <p className="text-xs text-blue-600">田中さんは同じ時間帯の経験が豊富で、チームワークも良好です。お客様対応も安心してお任せできます。</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Clock className="w-5 h-5 mr-2 text-purple-600" />
+                最近の緊急対応履歴
+              </h3>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 text-left">日時</th>
+                      <th className="px-4 py-2 text-left">欠勤者</th>
+                      <th className="px-4 py-2 text-left">代替者</th>
+                      <th className="px-4 py-2 text-left">対応時間</th>
+                      <th className="px-4 py-2 text-left">状態</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-t">
+                      <td className="px-4 py-2">2024/1/15 08:30</td>
+                      <td className="px-4 py-2">山田太郎</td>
+                      <td className="px-4 py-2">田中花子</td>
+                      <td className="px-4 py-2">5分</td>
+                      <td className="px-4 py-2">
+                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">完了</span>
+                      </td>
+                    </tr>
+                    <tr className="border-t">
+                      <td className="px-4 py-2">2024/1/12 14:15</td>
+                      <td className="px-4 py-2">佐藤次郎</td>
+                      <td className="px-4 py-2">鈴木三郎</td>
+                      <td className="px-4 py-2">12分</td>
+                      <td className="px-4 py-2">
+                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">完了</span>
+                      </td>
+                    </tr>
+                    <tr className="border-t">
+                      <td className="px-4 py-2">2024/1/10 07:45</td>
+                      <td className="px-4 py-2">高橋花子</td>
+                      <td className="px-4 py-2">-</td>
+                      <td className="px-4 py-2">-</td>
+                      <td className="px-4 py-2">
+                        <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">代替者なし</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                <h4 className="font-semibold text-red-800">今月の緊急対応</h4>
+                <p className="text-2xl font-bold text-red-600">8件</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-green-800">解決率</h4>
+                <p className="text-2xl font-bold text-green-600">87.5%</p>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-blue-800">平均対応時間</h4>
+                <p className="text-2xl font-bold text-blue-600">8.5分</p>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <h4 className="font-semibold text-purple-800">代替出勤回数</h4>
+                <p className="text-2xl font-bold text-purple-600">24回</p>
               </div>
             </div>
           </div>
